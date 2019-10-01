@@ -49,7 +49,7 @@ public class RcActivity extends Activity implements Button.OnClickListener {
     static public int deviceWidth=0;
     static public int deviceHeight=0;
 
-    static public Handler m_Handler = new Handler();
+    static public Handler s_Handler = new Handler();
 
     KbThread kbThread;
     RCTouchListener rcTouchListener;
@@ -152,10 +152,14 @@ public class RcActivity extends Activity implements Button.OnClickListener {
         else if(keyCode >= RcProtocol.ALPHABET[0] && keyCode <= RcProtocol.ALPHABET[1]){
             this.keyCode += RcProtocol.GAP[1];
         }
-        else if(keyCode == 62)
+        else if(keyCode == 62)  //// spacebar
             this.keyCode = 32;
-        else if(keyCode == 67)
+        else if(keyCode == 67)  //// backspace
             this.keyCode = 8;
+        else if(keyCode == 56)  //// '.'
+            this.keyCode = 46;
+        else if(keyCode == 69)  //// '-'
+            this.keyCode = 45;
 
         kbThread = new KbThread();
         kbThread.start();
@@ -170,9 +174,8 @@ public class RcActivity extends Activity implements Button.OnClickListener {
             imm.showSoftInput(imageView, 0);
         }
         if (v.getId() == R.id.bt_finish) {
-            recvThread.interrupt();
-            //sendThread.interrupt();
-            imgThread.interrupt();
+            threadOn = false;
+            onImg = false;
 
             finish();
         }
