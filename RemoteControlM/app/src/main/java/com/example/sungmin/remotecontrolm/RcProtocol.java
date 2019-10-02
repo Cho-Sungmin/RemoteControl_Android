@@ -31,6 +31,7 @@ public class RcProtocol {
     static final int SIZE_OF_ID = 10;
     static final int SIZE_OF_PW = 10;
 
+    static final int WM_MOUSEWHEEL= 0x020A;
     static final int WM_MOUSEMOVE = 0x0200;
     static final int WM_LBUTTONDOWN = 0x0201;
     static final int WM_LBUTTONUP = 0x0202;
