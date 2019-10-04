@@ -4,7 +4,7 @@ public class DataQueue {
     private ImagePacket[] queue;
     private int front;
     private int rear;
-    public static int QSIZE = 100;
+    public static int QSIZE = 300;
 
     public DataQueue() {
         queue = new ImagePacket[QSIZE];

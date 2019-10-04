@@ -251,14 +251,19 @@ public class RcActivity extends Activity implements Button.OnClickListener {
             this.keyCode += RcProtocol.GAP[0];
         } else if (keyCode >= RcProtocol.ALPHABET[0] && keyCode <= RcProtocol.ALPHABET[1]) {
             this.keyCode += RcProtocol.GAP[1];
-        } else if (keyCode == 62)  //// spacebar
+        }
+        else if (keyCode == 59)  //// '.'
+            this.keyCode = 16;
+        else if (keyCode == 62)  //// spacebar
             this.keyCode = 32;
         else if (keyCode == 67)  //// backspace
             this.keyCode = 8;
         else if (keyCode == 56)  //// '.'
-            this.keyCode = 46;
+            this.keyCode = 110;
+        else if (keyCode == 66)  //// 'enter'
+            this.keyCode = 13;
         else if (keyCode == 69)  //// '-'
-            this.keyCode = 45;
+            this.keyCode = 109;
 
         kbThread = new KbThread();
         kbThread.start();
@@ -441,14 +446,13 @@ public class RcActivity extends Activity implements Button.OnClickListener {
                         if (Math.abs(dist) > 3) {
                             cancelLongClick();
                             matrix.set(savedMatrix);
-                            matrix.postTranslate(0, event.getY() - (float) startPoint.y);
+                            matrix.postTranslate(0, dist);
                             matrix.getValues(values);
                             float height = imageView.getDrawable().getIntrinsicHeight() * values[4];
 
                             if (values[5] <= 0 && values[5] + height >= RcActivity.deviceHeight) {
                                 imageView.setImageMatrix(matrix);
                                 savedMatrix.set(matrix);
-                                mode = RcProtocol.NULL;
                             } else {                                        /////screen out of display vertically -> wheel event
                                 matrix.set(savedMatrix);
                                 imageView.setImageMatrix(matrix);
