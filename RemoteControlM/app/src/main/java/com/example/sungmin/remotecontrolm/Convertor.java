@@ -105,8 +105,7 @@ public class Convertor {
         return sockaddr_in;
     }
 
-    public static ImagePacket byteToImagePacket(ByteBuffer buffer) {
-        ImagePacket imgPack = new ImagePacket();
+    public static void byteToImagePacket(ByteBuffer buffer, ImagePacket imgPack) {
 
         imgPack.setSeq(buffer.getInt(0));
         imgPack.setFlag(buffer.getInt(4));
@@ -115,8 +114,6 @@ public class Convertor {
         buffer.get(imgPack.getData(), 0, RcProtocol.MTU);
 
         buffer.clear();
-
-        return imgPack;
     }
 
 

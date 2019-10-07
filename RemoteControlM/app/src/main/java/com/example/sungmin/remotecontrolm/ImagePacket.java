@@ -1,7 +1,6 @@
 package com.example.sungmin.remotecontrolm;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 public class ImagePacket {
     private int seq;
@@ -43,13 +42,19 @@ public class ImagePacket {
         this.flag = n;
     }
     public void setData(byte[] data) {
-       this.data = data;
+       this.data = data.clone();
     }
     public void setSize(int size) {
         this.size = size;
     }
 
-
+    public void imgcpy(ImagePacket src)
+    {
+        this.flag = src.flag;
+        this.size = src.size;
+        this.seq = src.seq;
+        this.setData(src.data);
+    }
 
     public static int SIZE(){
         return 3*(Integer.SIZE/8)+RcProtocol.MTU;

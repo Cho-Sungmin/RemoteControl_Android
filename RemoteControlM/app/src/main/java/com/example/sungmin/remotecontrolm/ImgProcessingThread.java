@@ -2,42 +2,48 @@ package com.example.sungmin.remotecontrolm;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.Image;
 import android.provider.ContactsContract;
-import android.util.Log;
 import android.widget.ImageView;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
 
 public class ImgProcessingThread extends Thread {
     DataQueue dataQueue;
     FileOutputStream writer;
-    ImagePacket[] imgFile;
+    ByteBuffer buffer;
+    ImagePacket imgFile;
     ImageView imageView;
     File img;
     File cache;
     String fileName;
     int seq = 0;
+    String path;
+    Bitmap bmp;
+
 
     public ImgProcessingThread(DataQueue queue, ImageView imageView, File path) {
         this.dataQueue = queue;
         this.imageView = imageView;
         this.cache = path;
         fileName = "img.jpg";
-        imgFile = new ImagePacket[1];
+        imgFile = new ImagePacket();
+        img = new File(cache, fileName);
+        img.deleteOnExit();
+        this.path = cache + "/img.jpg";
+        buffer = ByteBuffer.allocateDirect(ImagePacket.SIZE());
     }
 
     @Override
     public void run() {
         try {
             while (RcActivity.threadOn) {
-                saveImage();
-                if (RcActivity.onImg == false) {
+                if(saveImage())
                     showImage();
-                }else
-                    sleep(1);       ///// switch to another thread
             }
             freeMemory();
         } catch (Exception e) {
@@ -47,51 +53,38 @@ public class ImgProcessingThread extends Thread {
         }
     }
 
-    public void saveImage() {
-        RcActivity.onImg = true;
+    public boolean saveImage() {
         seq = 0;
         try {
-            img = new File(cache, fileName);
             writer = new FileOutputStream(img);
             while (true) {
-                boolean enter = dataQueue.dequeue(imgFile);
-                imgFile[0].convertEndian();
-                if (enter) {
-                    if (imgFile[0].getSeq() > seq) {        ///// fragments remain
-                        writer.write(imgFile[0].getData(), 0, imgFile[0].getSize());
-                        seq = imgFile[0].getSeq();
-
-                        if (imgFile[0].getFlag() == 0)      ///// the last fragment arrived
+                if (dataQueue.dequeue(buffer)) {
+                    Convertor.byteToImagePacket(buffer, imgFile);
+                    imgFile.convertEndian();
+                    if (imgFile.getSeq() > seq) {        ///// fragments remain
+                        writer.write(imgFile.getData(), 0, imgFile.getSize());
+                        seq = imgFile.getSeq();
+                        if (imgFile.getFlag() == 0)      ///// the last fragment arrived
                             break;
-                    } else
-                        break;
-                } else {
+                    }else {
+                        writer.close();
+                        return false;
+                    }
+                }else
                     sleep(1);
-                }
             }
             writer.close();
-            RcActivity.onImg = false;
         } catch (Exception e) {
             e.printStackTrace();
+            return false;
         }
+
+        return true;
     }
 
     public void showImage() {
         try {
-            final String path = cache + "/img.jpg";
             final Bitmap bm = BitmapFactory.decodeFile(path);
-
-            //int deviceWidth = imageView.getWidth();
-            //int deviceHeight = imageView.getHeight();
-            // BitmapFactory.Options bmpOps = new BitmapFactory.Options();
-            // bmpOps.inJustDecodeBounds = true;
-            //BitmapFactory.decodeFile(path, bmpOps);
-            // deviceWidth = bmpOps.outWidth;
-            // deviceHeight = bmpOps.outHeight;
-
-            //int scaleFactor = 1;
-            // bmpOps.inJustDecodeBounds = false;
-            // bmpOps.inSampleSize = scaleFactor;
 
             imageView.post(new Runnable() {
 
@@ -100,13 +93,15 @@ public class ImgProcessingThread extends Thread {
 
                     if (bm != null) {
                         imageView.setImageBitmap(bm);
+                        imageView.invalidate();
+                        if(bmp!=null)
+                            bmp.recycle();
+                        bmp = bm;
                     }
                     RcActivity.deviceWidth = imageView.getWidth();
                     RcActivity.deviceHeight = imageView.getHeight();
-                    RcActivity.onImg = false;
                 }
             });
-            sleep(1);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -119,6 +114,7 @@ public class ImgProcessingThread extends Thread {
             imgFile = null;
             img = null;
             cache = null;
+            buffer = null;
         } catch (Exception e) {
             e.printStackTrace();
         }

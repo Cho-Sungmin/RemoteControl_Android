@@ -2,9 +2,6 @@ package com.example.sungmin.remotecontrolm;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.os.Bundle;
 import android.os.Handler;
@@ -20,7 +17,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import java.io.File;
-import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.StandardProtocolFamily;
 import java.nio.ByteBuffer;
@@ -35,7 +31,6 @@ public class RcActivity extends Activity implements Button.OnClickListener {
     public DataQueue dataQueue;
     LogInfo logInfo;
     PacketInfo packetInfo;
-    public static boolean onImg = false;
     public static boolean threadOn = false;
     File cache;          ///// image file displaying the activity will be stored in cache directory
 
@@ -279,8 +274,6 @@ public class RcActivity extends Activity implements Button.OnClickListener {
         }
         if (v.getId() == R.id.bt_finish) {
             threadOn = false;
-            onImg = false;
-
             finish();
         }
     }
@@ -295,10 +288,10 @@ public class RcActivity extends Activity implements Button.OnClickListener {
         threadOn = false;
         imgThread = null;
         recvThread = null;
+        dataQueue.freeMemory();
         dataQueue = null;
         logInfo = null;
         clntAddr = null;
-        onImg = false;
         kbThread = null;
         rcTouchListener.freeMemory();
         rcTouchListener = null;

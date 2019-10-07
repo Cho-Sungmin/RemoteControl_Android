@@ -1,10 +1,8 @@
 package com.example.sungmin.remotecontrolm;
 
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 public class LogInfo implements Serializable{       ///// user information
     int mode;

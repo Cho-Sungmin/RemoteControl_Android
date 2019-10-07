@@ -2,8 +2,6 @@ package com.example.sungmin.remotecontrolm;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.SimpleTimeZone;
 
 public class PacketInfo implements Serializable {           ///// packet header
     int uId;

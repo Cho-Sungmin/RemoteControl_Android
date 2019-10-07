@@ -1,38 +1,50 @@
 package com.example.sungmin.remotecontrolm;
 
+import java.nio.ByteBuffer;
+
 public class DataQueue {
-    private ImagePacket[] queue;
+    //private ImagePacket[] queue;
+    private ByteBuffer[] queue;
     private int front;
     private int rear;
     public static int QSIZE = 300;
 
     public DataQueue() {
-        queue = new ImagePacket[QSIZE];
+        //queue = new ImagePacket[QSIZE];
+        queue = new ByteBuffer[QSIZE];
+        for(int i=0; i<QSIZE; i++)
+        {
+            //queue[i] = new ImagePacket();
+            queue[i] = ByteBuffer.allocateDirect(ImagePacket.SIZE());
+        }
         front = rear = 0;
     }
 
-    boolean enqueue(ImagePacket value) {
-        if (!isFull()) {
-            synchronized (this) {
+    boolean enqueue(/*ImagePacket*/ ByteBuffer data) {
+        synchronized (this) {
+            if (!isFull()) {
                 rear = (rear + 1) % QSIZE;
-                queue[rear] = value;
-            }
-
-            return true;
-        } else
-            return false;
+                //queue[rear] = value;
+                //queue[rear].imgcpy(value);
+                queue[rear].put(data);
+                queue[rear].flip();
+                return true;
+            } else
+                return false;
+        }
     }
 
-    boolean dequeue(ImagePacket[] data) {
-        if (!isEmpty()) {
-            synchronized (this) {
+    boolean dequeue(/*ImagePacket*/ ByteBuffer data) {
+        synchronized (this) {
+            if (!isEmpty()) {
                 front = (front + 1) % QSIZE;
-            }
-            data[0] = queue[front];
-
-            return true;
-        } else
-            return false;
+                data.put(queue[front]);
+                queue[front].clear();
+                data.flip();
+                return true;
+            } else
+                return false;
+        }
     }
 
     boolean isFull() {
@@ -49,11 +61,21 @@ public class DataQueue {
             return false;
     }
 
-    ImagePacket peek() {
+    /*ImagePacket peek() {
         if (isEmpty() != true)
             return queue[front + 1];
         else
             return queue[0];
+    }*/
+
+    public void freeMemory()
+    {
+        for(int i=0; i<QSIZE; i++)
+        {
+            queue[i] = null;
+        }
+        queue = null;
     }
+
 
 }

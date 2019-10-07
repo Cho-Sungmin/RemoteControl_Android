@@ -1,6 +1,9 @@
 package com.example.sungmin.remotecontrolm;
 
 
+import android.os.SystemClock;
+import android.util.Log;
+
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 
@@ -21,6 +24,7 @@ public class RecvThread extends Thread {
         this.packet[0] = head;
         this.packet[1] = data;
         this.ch = lParam;
+        this.imgPacket = new ImagePacket();
     }
 
     @Override
@@ -29,8 +33,10 @@ public class RecvThread extends Thread {
             while (RcActivity.threadOn) {
                 ch.read(packet);
                 data.flip();
-                imgPacket = Convertor.byteToImagePacket(data);
-                dataQueue.enqueue(imgPacket);
+                //Convertor.byteToImagePacket(data, imgPacket);
+                //dataQueue.enqueue(imgPacket);
+                dataQueue.enqueue(data);
+                data.clear();
                 head.clear();
             }
             ///// announce disconnection /////
