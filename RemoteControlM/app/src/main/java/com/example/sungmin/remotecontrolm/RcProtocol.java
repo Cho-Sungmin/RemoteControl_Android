@@ -6,7 +6,7 @@ import java.net.SocketException;
 import java.util.Enumeration;
 
 public class RcProtocol {
-    static final int MTU = 1024;
+    static final int MTU = 576;
     static final String SERVER_IP = "192.168.0.13";
     static final int RELAY_PORT = 3333;
     static final int UDP_PORT = 4444;
@@ -44,6 +44,8 @@ public class RcProtocol {
     static final int ZOOM = 2;
     static final int SHIFT = 3;
     static final int NULL = 0;
+
+    static final int IMAGE_BUFFER_SIZE = 1024 * 1024;
 
     ///// to map window's keycode
     static final int[] NUMBER = {7, 28};

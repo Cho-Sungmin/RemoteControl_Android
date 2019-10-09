@@ -31,7 +31,7 @@ public class UdpConnection extends AppCompatActivity {
         int mode = -1;
         mode = intent.getIntExtra("mode", 1);
 
-        serverAddress = new InetSocketAddress("192.168.0.13", RcProtocol.RELAY_PORT);
+        serverAddress = new InetSocketAddress(RcProtocol.SERVER_IP, RcProtocol.RELAY_PORT);
 
 
         logInfo = new LogInfo();

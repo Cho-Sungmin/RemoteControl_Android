@@ -2,40 +2,30 @@ package com.example.sungmin.remotecontrolm;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.provider.ContactsContract;
 import android.widget.ImageView;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
 
 public class ImgProcessingThread extends Thread {
     DataQueue dataQueue;
-    FileOutputStream writer;
     ByteBuffer buffer;
+    ByteBuffer imgBuffer;
+    byte[] data;
     ImagePacket imgFile;
     ImageView imageView;
-    File img;
-    File cache;
-    String fileName;
     int seq = 0;
-    String path;
+    int size = 0;
     Bitmap bmp;
 
 
-    public ImgProcessingThread(DataQueue queue, ImageView imageView, File path) {
+    public ImgProcessingThread(DataQueue queue, ImageView imageView) {
         this.dataQueue = queue;
         this.imageView = imageView;
-        this.cache = path;
-        fileName = "img.jpg";
+
         imgFile = new ImagePacket();
-        img = new File(cache, fileName);
-        img.deleteOnExit();
-        this.path = cache + "/img.jpg";
+
         buffer = ByteBuffer.allocateDirect(ImagePacket.SIZE());
+        imgBuffer = ByteBuffer.allocateDirect(RcProtocol.IMAGE_BUFFER_SIZE);
+        data = new byte[RcProtocol.IMAGE_BUFFER_SIZE];
     }
 
     @Override
@@ -52,28 +42,30 @@ public class ImgProcessingThread extends Thread {
             freeMemory();
         }
     }
-
     public boolean saveImage() {
         seq = 0;
         try {
-            writer = new FileOutputStream(img);
+            imgBuffer.clear();
             while (true) {
+
                 if (dataQueue.dequeue(buffer)) {
                     Convertor.byteToImagePacket(buffer, imgFile);
                     imgFile.convertEndian();
                     if (imgFile.getSeq() > seq) {        ///// fragments remain
-                        writer.write(imgFile.getData(), 0, imgFile.getSize());
+                        imgBuffer.put(imgFile.getData(), 0, imgFile.getSize());
                         seq = imgFile.getSeq();
-                        if (imgFile.getFlag() == 0)      ///// the last fragment arrived
+                        if (imgFile.getFlag() == 0) {     ///// the last fragment arrived
+                            imgBuffer.flip();
+                            size = imgBuffer.limit();
+                            imgBuffer.get(data, 0, size);
                             break;
+                        }
                     }else {
-                        writer.close();
                         return false;
                     }
                 }else
                     sleep(1);
             }
-            writer.close();
         } catch (Exception e) {
             e.printStackTrace();
             return false;
@@ -81,11 +73,9 @@ public class ImgProcessingThread extends Thread {
 
         return true;
     }
-
     public void showImage() {
         try {
-            final Bitmap bm = BitmapFactory.decodeFile(path);
-
+            final Bitmap bm = BitmapFactory.decodeByteArray(data, 0, size);
             imageView.post(new Runnable() {
 
                 @Override
@@ -110,11 +100,12 @@ public class ImgProcessingThread extends Thread {
     void freeMemory() {
         try {
             dataQueue = null;
-            writer = null;
             imgFile = null;
-            img = null;
-            cache = null;
+            //img = null;
+            //cache = null;
             buffer = null;
+            imgBuffer = null;
+            data = null;
         } catch (Exception e) {
             e.printStackTrace();
         }

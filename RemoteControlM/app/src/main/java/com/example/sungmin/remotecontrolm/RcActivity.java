@@ -16,7 +16,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.ImageView;
 
-import java.io.File;
 import java.net.InetSocketAddress;
 import java.net.StandardProtocolFamily;
 import java.nio.ByteBuffer;
@@ -32,7 +31,6 @@ public class RcActivity extends Activity implements Button.OnClickListener {
     LogInfo logInfo;
     PacketInfo packetInfo;
     public static boolean threadOn = false;
-    File cache;          ///// image file displaying the activity will be stored in cache directory
 
     ///// for keypad hooking /////
     InputMethodManager imm;
@@ -106,9 +104,7 @@ public class RcActivity extends Activity implements Button.OnClickListener {
                         recvThread = new RecvThread(ch, dataQueue);
                         recvThread.start();
 
-                        cache = getCacheDir();
-
-                        imgThread = new ImgProcessingThread(dataQueue, imageView, cache);
+                        imgThread = new ImgProcessingThread(dataQueue, imageView);
                         imgThread.start();
 
                         rcTouchListener = new RCTouchListener(detector, packetInfo.uId);
